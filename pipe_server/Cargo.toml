@@ -1,0 +1,24 @@
+[package]
+name = "pipe_server"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+winapi = { version = "0.3.9", features = [
+  "winnt",
+  "winbase",
+  "winerror",
+  "handleapi",
+  "namedpipeapi",
+  "errhandlingapi",
+] }
+
+[profile.release]
+codegen-units = 1 # 一个接一个地编译 crates，这样编译器可以更好地优化
+lto = true        # 开启链接优化
+opt-level = "s"   # 为二进制文件大小进行优化
+panic = "abort"   # 移除昂贵的 panic 清理逻辑
+strip = true      # 移除调试符号

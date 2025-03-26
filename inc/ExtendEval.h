@@ -23,4 +23,10 @@
     if (err == 0)      \
         err = f;
 
+struct SPBasicSuite* globalPicaBasicPtr = nullptr;
+
+typedef const char* (*CallbackFn)(const uint8_t* data, int len);
+
+typedef const char*(_cdecl* Start_pipe_server)(CallbackFn fn);
+
 __export AEGP_PluginInitFuncPrototype master;

@@ -41,11 +41,10 @@ target_include_directories(
     ${PROJECT_SOURCE_DIR}/inc/func
     ${PROJECT_SOURCE_DIR}/inc
 )
-set(RESOURCE_DIR ${PROJECT_SOURCE_DIR}/res)
-set(RC_R ${RESOURCE_DIR}/${PROJECT_NAME}.r)
-set(RC_RR ${RESOURCE_DIR}/${PROJECT_NAME}.rr)
-set(RC_RRC ${RESOURCE_DIR}/${PROJECT_NAME}.rrc)
-set(RC_RC ${RESOURCE_DIR}/${PROJECT_NAME}.rc)
+set(RC_R ${PROJECT_SOURCE_DIR}/src/${PROJECT_NAME}.r)
+set(RC_RR ${BIN_DIR}/${PROJECT_NAME}.rr)
+set(RC_RRC ${BIN_DIR}/${PROJECT_NAME}.rrc)
+set(RC_RC ${BIN_DIR}/${PROJECT_NAME}.rc)
 add_custom_command(
     OUTPUT ${RC_RR}
     COMMAND cl /I "${AE_SDK_PATH}/Headers" /EP \"${RC_R}\" > ${RC_RR}
@@ -66,23 +65,3 @@ target_sources(
     PRIVATE
     ${RC_RC}
 )
-
-#打包dll
-# set(MyDLL "./pipe_server.dll")
-# set(DLL_RC ${BIN_DIR}/pipe_server.rc)
-# set(DLL_RES ${BIN_DIR}/pipe_server.res)
-# configure_file(
-#     ${MyDLL}
-#     ${DIST_DIR}/pipe_server.dll
-#     COPYONLY)
-# find_program(RC_COMPILER NAMES windres rc)
-# if(NOT RC_COMPILER)
-#     message(FATAL_ERROR "Resource compiler not found")
-# endif()
-# file(WRITE ${DLL_RC} "IDR_EMBEDDED_DLL1 RCDATA \"pipe_server.dll\"\n")
-# add_custom_command(
-#     DEPENDS ${DLL_RC}
-#     OUTPUT ${DLL_RES}
-#     COMMAND ${RC_COMPILER} -i ${DLL_RC} -o ${DLL_RES}
-# )
-# target_link_libraries(${PROJECT_NAME} PRIVATE ${DLL_RES})

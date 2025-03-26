@@ -1,8 +1,6 @@
 #include "ExtendEval.h"
 #include <thread>
 
-struct SPBasicSuite* globalPicaBasicPtr = nullptr;
-
 const char* eval(const char* code, int* errCode)
 {
     InitError();
@@ -31,15 +29,11 @@ const char* eval(const char* code, int* errCode)
     return result;
 }
 
-typedef const uint8_t* (*CallbackFn)(const uint8_t* data, int len);
-
-typedef const char*(_cdecl* Start_pipe_server)(CallbackFn fn);
-
-const uint8_t* callback(const uint8_t* data, int length)
+const char* callback(const uint8_t* data, int length)
 {
     int errCode = 0;
     const char* result = eval(reinterpret_cast<const char*>(data), &errCode);
-    return reinterpret_cast<const uint8_t*>(result);
+    return result;
 }
 
 int master(
@@ -53,9 +47,7 @@ int master(
     std::thread([]() {
         std::this_thread::yield();
         HMODULE dll = LoadLibraryA("./Plug-ins/pipe_server.dll");
-        FARPROC fn = GetProcAddress(dll, "start_pipe_server");
-        Start_pipe_server start_pipe_server = reinterpret_cast<Start_pipe_server>(fn);
-        start_pipe_server(callback);
+        reinterpret_cast<Start_pipe_server>(GetProcAddress(dll, "start_pipe_server"))(callback);
         FreeLibrary(dll);
     }).detach();
     return 0;

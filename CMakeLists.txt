@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.20.0)
 project(ExtendEval)
-
-#init
 set(CMAKE_CXX_STANDARD 20)
 set(AE_SDK_PATH "E:/C_C++/After-Effects-Plug-ins/include")
 set(BIN_DIR ${PROJECT_SOURCE_DIR}/bin)
@@ -13,14 +11,11 @@ file(
     ${AE_SDK_PATH}/Util/*.cpp
     ${PROJECT_SOURCE_DIR}/src/*.cpp
 )
-
 add_library(
     ${PROJECT_NAME}
     MODULE
     ${SOURCE_FILES}
 )
-
-# to aex plugin
 target_compile_definitions(
     ${PROJECT_NAME}
     PRIVATE
@@ -59,9 +54,9 @@ add_custom_command(
     OUTPUT ${RC_RC}
     COMMAND cl /EP ${RC_RRC} > ${RC_RC}
 )
-set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".aex")
 target_sources(
     ${PROJECT_NAME}
     PRIVATE
     ${RC_RC}
 )
+set_target_properties(${PROJECT_NAME} PROPERTIES SUFFIX ".aex")

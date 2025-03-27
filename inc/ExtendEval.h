@@ -6,6 +6,7 @@
 #include "SPBasic.h"
 #include "SoCClient.h"
 #include "entry.h"
+#include "pipeServer.h"
 
 #ifdef _WIN32
 #include "windows.h"
@@ -23,10 +24,6 @@
     if (err == 0)      \
         err = f;
 
-struct SPBasicSuite* globalPicaBasicPtr = nullptr;
-
-typedef const char* (*CallbackFn)(const uint8_t* data, int len);
-
-typedef const char*(_cdecl* Start_pipe_server)(CallbackFn fn);
+static struct SPBasicSuite* globalPicaBasicPtr = nullptr;
 
 __export AEGP_PluginInitFuncPrototype master;

@@ -1,11 +1,9 @@
 #include "ExtendEval.h"
 #include <thread>
 
-const char* eval(const char* code, int* errCode)
+static int evalExtendScript(AEGP_SuiteHandler& suite, const char* code, const char** result)
 {
     InitError();
-    const char* result = nullptr;
-    AEGP_SuiteHandler suite(globalPicaBasicPtr);
     AEGP_MemorySuite1* MemorySuite = suite.MemorySuite1();
     AEGP_MemSize size = 0;
     AEGP_MemHandle outResult = NULL;
@@ -19,21 +17,25 @@ const char* eval(const char* code, int* errCode)
         targetResult = &outErrorString;
 
     if (targetResult == nullptr)
-        *errCode = GetError();
+        return GetError();
 
     ListenError(MemorySuite->AEGP_LockMemHandle(*targetResult, (void**)(result)));
 
     ListenError(MemorySuite->AEGP_UnlockMemHandle(*targetResult));
     ListenError(MemorySuite->AEGP_FreeMemHandle(*targetResult));
-    *errCode = GetError();
-    return result;
+    return GetError();
 }
 
-const char* callback(const uint8_t* data, int length)
+static void processMessage(struct SPBasicSuite* sp, const char* message, char* result)
 {
-    int errCode = 0;
-    const char* result = eval(reinterpret_cast<const char*>(data), &errCode);
-    return result;
+    InitError();
+    AEGP_SuiteHandler suite(sp);
+    const char* evalResult = nullptr;
+    ListenError(evalExtendScript(suite, message, &evalResult));
+    if (err == 0)
+        sprintf(result, evalResult);
+    else
+        suite.UtilitySuite3()->AEGP_WriteToOSConsole("Error: Failed to evaluate script");
 }
 
 int master(
@@ -41,14 +43,19 @@ int master(
     A_long driver_major_versionL,
     A_long driver_minor_versionL,
     AEGP_PluginID aegp_plugin_id,
-    AEGP_GlobalRefcon* plugin_refconP)
+    AEGP_GlobalRefcon* global_refconP)
 {
     globalPicaBasicPtr = pica_basicP;
     std::thread([]() {
-        std::this_thread::yield();
-        HMODULE dll = LoadLibraryA("./Plug-ins/pipe_server.dll");
-        reinterpret_cast<Start_pipe_server>(GetProcAddress(dll, "start_pipe_server"))(callback);
-        FreeLibrary(dll);
+        while (true) {
+            std::this_thread::yield();
+            int err = pipeServer(
+                L"\\\\.\\pipe\\ExtendEval",
+                globalPicaBasicPtr,
+                processMessage);
+            if (err == 1)
+                ((AEGP_SuiteHandler)globalPicaBasicPtr).UtilitySuite3()->AEGP_WriteToOSConsole("Failed to start pipe server");
+        }
     }).detach();
     return 0;
 }
